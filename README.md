@@ -9,7 +9,7 @@ This project uses a modern decoupled architecture:
 ```mermaid
 flowchart TD
     User([User]) -->|Provide API Key & Query| UI[React Frontend UI]
-    UI -->|POST /api/chat \n {query, api_key}| API[FastAPI Backend]
+    UI -->|"POST /api/chat \n {query, api_key}"| API[FastAPI Backend]
     
     subgraph Backend [Backend Service]
         API -->|Init & Invoke| Agent[Langchain SQL Agent]
