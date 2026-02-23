@@ -114,13 +114,20 @@ def setup_agent(engine: Engine, api_key: str) -> tuple:
         "You are an agent designed to interact with a SQL database.\n"
         "Given an input question, create a syntactically correct SQLite query to run, then look at the results of the query and return the answer.\n"
         "Unless the user specifies otherwise, whenever you return data results, you MUST ALWAYS format them as a nicely formatted Markdown Table.\n"
-        "Never use numbered lists or comma separated text for data results. Always default to a Markdown Table."
+        "Never use numbered lists or comma separated text for data results. Always default to a Markdown Table.\n"
+        "The response SQL must in the format of SQL.\n"
+        "IMPORTANT TABLE RELATIONSHIPS (USE THESE FOR JOINS):\n"
+        "- transactions_data.client_id = users_data.id\n"
+        "- transactions_data.card_id = cards_data.id\n"
+        "- transactions_data.mcc = mcc_codes.mcc_id\n"
+        "- cards_data.client_id = users_data.id\n"
     )
     
     # Create the SQL agent
     agent_executor = create_sql_agent(
         llm, 
         db=db, 
+        agent_type="tool-calling",
         verbose=True, 
         prefix=prefix,
         callback_manager=callback_manager, 
@@ -188,6 +195,10 @@ def get_result(query: str, agent_executor: object, query_logger: SQLQueryLogger,
                 captured_query = captured_query['query']
             elif isinstance(captured_query, str):
                 pass
+                
+    if captured_query:
+        captured_query = sqlparse.format(captured_query, reindent=True, keyword_case='upper')
+
     return answer, captured_query, execution_time, token_str
 
 

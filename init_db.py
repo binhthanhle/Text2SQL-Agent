@@ -35,6 +35,18 @@ def init_database(db_name: str, db_dir: str):
                 .replace(',', '').replace('+', 'plus').replace('-', '_').replace('.', '') 
                 for c in df.columns
             ]
+            
+            # Clean up string values that are actually numeric (like currency or percentages)
+            for col in df.columns:
+                if df[col].dtype == 'object':
+                    try:
+                        # Check if any value starts with $ or contains $ and numbers
+                        if df[col].astype(str).str.contains(r'^\$?\s?-?[\d,]+(\.\d+)?$|^-?\$[\d,]+(\.\d+)?$').any():
+                            # Remove $ and , and spaces
+                            df[col] = df[col].astype(str).str.replace('$', '', regex=False).str.replace(',', '', regex=False).str.strip()
+                            df[col] = pd.to_numeric(df[col], errors='coerce')
+                    except Exception as e:
+                        logger.error(f"Error parsing column {col} in {table_name}: {e}")
 
             df.to_sql(table_name, engine, index=False, if_exists='replace')
             logger.info(f"Table '{table_name}' loaded successfully with {len(df)} rows.")

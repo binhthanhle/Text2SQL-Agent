@@ -10,10 +10,17 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 // API URL - should be environment variable in production
 const API_URL = "http://localhost:8000/api"
 
-mermaid.initialize({ startOnLoad: false, theme: 'default' });
-
 export default function App() {
   const [activeTab, setActiveTab] = useState('chat')
+
+  // Safe Mermaid Initialization
+  useEffect(() => {
+    try {
+      mermaid.initialize({ startOnLoad: false, theme: 'default' });
+    } catch (e) {
+      console.error("Mermaid initialization failed:", e);
+    }
+  }, []);
   const [messages, setMessages] = useState([])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
